@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: wordpress
+  tag: php8.2-fpm
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 8Gi
+
+wordpressUsername: user
+wordpressPassword: ""
+wordpressEmail: user@example.com
+wordpressFirstName: FirstName
+wordpressLastName: LastName
+wordpressBlogName: My Blog
+
+mariadb:
+  enabled: true
+  auth:
+    database: wordpress
+    username: wordpress
+    password: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {} 

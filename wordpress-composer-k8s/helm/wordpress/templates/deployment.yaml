@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wordpress.fullname" . }}
+  labels:
+    {{- include "wordpress.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "wordpress.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "wordpress.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: {{ include "wordpress.databaseHost" . | quote }}
+            - name: WORDPRESS_DB_USER
+              value: {{ .Values.mariadb.auth.username | quote }}
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wordpress.databaseSecretName" . }}
+                  key: mariadb-password
+            - name: WORDPRESS_DB_NAME
+              value: {{ .Values.mariadb.auth.database | quote }}
+          volumeMounts:
+            - name: wordpress-data
+              mountPath: /var/www/html
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: wordpress-data
+          persistentVolumeClaim:
+            claimName: {{ include "wordpress.fullname" . }} 
