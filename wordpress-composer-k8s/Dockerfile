@@ -1,31 +1,45 @@
-FROM composer:latest as composer
+FROM composer:latest AS composer
 
 WORKDIR /app
+
 COPY composer.json ./
+
+# Forceer HTTPS voor GitHub
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:"
+
 RUN composer install --no-dev --no-scripts --no-autoloader
 
 FROM wordpress:php8.2-fpm
 
-# Install dependencies
+# Install required PHP extensions
 RUN apt-get update && apt-get install -y \
     libzip-dev \
+    zip \
     unzip \
     && docker-php-ext-install zip
 
-WORKDIR /var/www/html
+# Create WordPress directory structure
+RUN mkdir -p /var/www/html/web/wp
 
-# Copy WordPress files from composer build
-COPY --from=composer /app/vendor/johnpbloch/wordpress/ /var/www/html/
-COPY --from=composer /app/vendor/ /var/www/html/vendor/
-COPY --from=composer /app/composer.json /var/www/html/composer.json
-COPY --from=composer /app/composer.lock /var/www/html/composer.lock
+# Copy WordPress files from Composer
+COPY --from=composer /app/vendor/johnpbloch/wordpress/ /var/www/html/web/wp/
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html && \
-    find /var/www/html -type d -exec chmod 755 {} \; && \
-    find /var/www/html -type f -exec chmod 644 {} \;
+RUN chown -R www-data:www-data /var/www/html/web/wp && \
+    chmod -R 755 /var/www/html/web/wp
 
+# Copy wp-config.php
+COPY wp-config.php /var/www/html/web/wp/
+
+# Set working directory
+WORKDIR /var/www/html/web/wp
+
+# Create themes directory and set permissions
+RUN mkdir -p /var/www/html/web/wp/wp-content/themes && \
+    chown -R www-data:www-data /var/www/html/web/wp/wp-content/themes && \
+    chmod -R 755 /var/www/html/web/wp/wp-content/themes
+
+# Expose port 9000
 EXPOSE 9000
 
 CMD ["php-fpm"] 

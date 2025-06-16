@@ -2,17 +2,31 @@
 docker-compose.override.yml
 .env
 
-# WordPress
-wp-config.php
-wp-content/uploads/
-wp-content/upgrade/
-wp-content/backup-db/
-wp-content/cache/
-wp-content/backups/
+# WordPress core files
+/web/wp/wp-admin/
+/web/wp/wp-includes/
+/web/wp/wp-content/uploads/
+/web/wp/wp-content/upgrade/
+/web/wp/wp-content/backup-db/
+/web/wp/wp-content/cache/
+/web/wp/wp-content/backups/
+/web/wp/wp-content/languages/
+/web/wp/wp-content/upgrade/
+/web/wp/wp-content/mu-plugins/
+/web/wp/wp-content/index.php
+/web/wp/wp-content/advanced-cache.php
+/web/wp/wp-content/object-cache.php
+/web/wp/wp-content/wp-cache-config.php
+/web/wp/wp-*.php
+/web/wp/xmlrpc.php
 
 # Composer
 /vendor/
 composer.lock
+
+# Environment files
+.env.*
+!.env.example
 
 # IDE
 .idea/
